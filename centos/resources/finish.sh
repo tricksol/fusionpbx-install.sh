@@ -64,10 +64,13 @@ group_uuid=$(psql --host=$database_host --port=$database_port --username=$databa
 group_uuid=$(echo $group_uuid | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
 
 #add the user to the group
-group_user_uuid=$(/usr/bin/php /var/www/fusionpbx/resources/uuid.php);
+user_group_uuid=$(/usr/bin/php /var/www/fusionpbx/resources/uuid.php);
 group_name=superadmin
-psql --host=$database_host --port=$database_port --username=$database_username -c "insert into v_group_users (group_user_uuid, domain_uuid, group_name, group_uuid, user_uuid) values('$group_user_uuid', '$domain_uuid', '$group_name', '$group_uuid', '$user_uuid');"
-
+if [ .$system_branch = .'master' ]; then
+	psql --host=$database_host --port=$database_port --username=$database_username -c "insert into v_user_groups (user_group_uuid, domain_uuid, group_name, group_uuid, user_uuid) values('$user_group_uuid', '$domain_uuid', '$group_name', '$group_uuid', '$user_uuid');"
+else
+	psql --host=$database_host --port=$database_port --username=$database_username -c "insert into v_group_users (group_user_uuid, domain_uuid, group_name, group_uuid, user_uuid) values('$user_group_uuid', '$domain_uuid', '$group_name', '$group_uuid', '$user_uuid');"
+fi
 #update the php configuration
 sed -i 's/user nginx/user freeswitch daemon/g' /etc/nginx/nginx.conf
 chown -Rf freeswitch:daemon /var/lib/nginx
@@ -131,12 +134,13 @@ echo "      Fastest way to learn FusionPBX. For more information https://www.fus
 echo "      Available online and in person. Includes documentation and recording."
 echo ""
 echo "      Location:               Online"
-echo "      Admin Training:          7 -  9 August 2018 (3 Days)"
-echo "      Advanced Training:      21 - 22 August 2018 (2 Days)"
-echo "      Continuing Education:        19 July   2018 (1 Day)"
-echo "      Timezone:               https://www.timeanddate.com/weather/usa/boise"
+echo "      Admin Training:          TBD"
+echo "      Advanced Training:       TBD"
+echo "      Continuing Education:    24 October 2019 (1 Day)"
+echo "      Timezone:               https://www.timeanddate.com/weather/usa/idaho"
 echo ""
 echo "   Additional information."
+echo "      https://fusionpbx.com/members.php"
 echo "      https://fusionpbx.com/training.php"
 echo "      https://fusionpbx.com/support.php"
 echo "      https://www.fusionpbx.com"

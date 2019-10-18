@@ -13,10 +13,21 @@ sed -i '/cdrom:/d' /etc/apt/sources.list
 
 #Update to latest packages
 verbose "Update installed packages"
-apt-get update && apt-get upgrade -y --force-yes
+apt-get update && apt-get upgrade -y
 
 #Add dependencies
+apt-get install -y wget
 apt-get install -y lsb-release
+apt-get install -y systemd
+apt-get install -y systemd-sysv
+apt-get install -y ca-certificates
+apt-get install -y dialog
+apt-get install -y nano
+
+#SNMP
+apt-get install -y snmpd
+echo "rocommunity public" > /etc/snmp/snmpd.conf
+service snmpd restart
 
 #IPTables
 resources/iptables.sh
@@ -27,11 +38,11 @@ resources/sngrep.sh
 #FusionPBX
 resources/fusionpbx.sh
 
-#NGINX web server
-resources/nginx.sh
-
 #PHP
 resources/php.sh
+
+#NGINX web server
+resources/nginx.sh
 
 #Fail2ban
 resources/fail2ban.sh
@@ -44,17 +55,6 @@ resources/postgresql.sh
 
 #set the ip address
 server_address=$(hostname -I)
-
-#restart services
-systemctl daemon-reload
-if [ ."$php_version" = ."5" ]; then
-        systemctl restart php5-fpm
-fi
-if [ ."$php_version" = ."7" ]; then
-        systemctl restart php7.1-fpm
-fi
-systemctl restart nginx
-systemctl restart fail2ban
 
 #add the database schema, user and groups
 resources/finish.sh

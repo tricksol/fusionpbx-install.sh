@@ -19,35 +19,42 @@ echo "Install PostgreSQL and create the database and users\n"
 
 #included in the distribution
 if [ ."$database_repo" = ."system" ]; then
-	apt-get install -y --force-yes sudo postgresql
+	apt-get install -y sudo postgresql
 fi
 
 #postgres official repository
 if [ ."$database_repo" = ."official" ]; then
-	echo "deb http://apt.postgresql.org/pub/repos/apt/ $os_codename-pgdg main" > /etc/apt/sources.list.d/postgresql.list
-	wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-	apt-get update && apt-get upgrade -y
+	if [ ."$os_codename" = ."jessie" ]; then
+		echo "deb http://apt.postgresql.org/pub/repos/apt/ $os_codename-pgdg main" > /etc/apt/sources.list.d/postgresql.list
+		wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+		apt-get update && apt-get upgrade -y
+	fi
+	if [ ."$os_codename" = ."stretch" ]; then
+		echo "deb http://apt.postgresql.org/pub/repos/apt/ $os_codename-pgdg main" > /etc/apt/sources.list.d/postgresql.list
+		wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+		apt-get update && apt-get upgrade -y
+	fi
+	if [ ."$os_codename" = ."buster" ]; then
+		echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/postgresql.list
+		wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+	fi
 	if [ ."$database_version" = ."latest" ]; then
-                apt-get install -y --force-yes sudo postgresql
+                apt-get install -y sudo postgresql
 	fi
 	if [ ."$database_version" = ."9.6" ]; then
-                apt-get install -y --force-yes sudo postgresql-$database_version
+                apt-get install -y sudo postgresql-$database_version
         fi
 	if [ ."$database_version" = ."9.4" ]; then
-                apt-get install -y --force-yes sudo postgresql-$database_version
+                apt-get install -y sudo postgresql-$database_version
         fi
 fi
 
 #add PostgreSQL and 2ndquadrant repos
 if [ ."$database_repo" = ."2ndquadrant" ]; then
-	echo 'deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main' > /etc/apt/sources.list.d/postgresql.list
-	echo 'deb http://packages.2ndquadrant.com/bdr/apt/ jessie-2ndquadrant main' > /etc/apt/sources.list.d/2ndquadrant.list
-	/usr/bin/wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | apt-key add -
-	/usr/bin/wget --quiet -O - http://packages.2ndquadrant.com/bdr/apt/AA7A6805.asc | apt-key add -
-	apt-get update && apt-get upgrade -y
-	apt-get install -y --force-yes sudo postgresql-bdr-9.4 postgresql-bdr-9.4-bdr-plugin postgresql-bdr-contrib-9.4
+	apt install -y curl
+	curl https://dl.2ndquadrant.com/default/release/get/deb | bash
+	apt-get install -y sudo postgresql-bdr-9.4 postgresql-bdr-9.4-bdr-plugin postgresql-bdr-contrib-9.4
 fi
-
 
 #systemd
 systemctl daemon-reload
@@ -57,12 +64,12 @@ systemctl restart postgresql
 #/usr/sbin/service postgresql restart
 
 #install the database backup
-cp backup/fusionpbx-backup.sh /etc/cron.daily
-cp backup/fusionpbx-maintenance.sh /etc/cron.daily
-chmod 755 /etc/cron.daily/fusionpbx-backup.sh
-chmod 755 /etc/cron.daily/fusionpbx-maintenance.sh
-sed -i "s/zzz/$password/g" /etc/cron.daily/fusionpbx-backup.sh
-sed -i "s/zzz/$password/g" /etc/cron.daily/fusionpbx-maintenance.sh
+#cp backup/fusionpbx-backup /etc/cron.daily
+#cp backup/fusionpbx-maintenance /etc/cron.daily
+#chmod 755 /etc/cron.daily/fusionpbx-backup
+#chmod 755 /etc/cron.daily/fusionpbx-maintenance
+#sed -i "s/zzz/$password/g" /etc/cron.daily/fusionpbx-backup
+#sed -i "s/zzz/$password/g" /etc/cron.daily/fusionpbx-maintenance
 
 #move to /tmp to prevent a red herring error when running sudo with psql
 cwd=$(pwd)
